@@ -34,54 +34,11 @@
 #endif
 
 #include "sys-socket.h"
-
 #define data_proxy data_fastcgi
 #define data_proxy_init data_fastcgi_init
 
 #define PROXY_RETRY_TIMEOUT 60
 
-void inform_proxy1(server* srv){
-    int sockfd, portno, n;
-    struct sockaddr_in serv_addr;
-    struct hostent *server;
-    char buffer[256];
-    portno = 5001;
-    char* hostname = "localhost";
-    
-    /* Create a socket point */
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0) 
-    {
-        log_error_write(srv, __FILE__, __LINE__,  "s", "chandancode: ERROR opening socket");
-        return;
-        //exit(1);
-    }
-    server = gethostbyname(hostname);
-    if (server == NULL) {
-        log_error_write(srv, __FILE__, __LINE__,  "s", "chandancode: ERROR, no such host1");
-        return;
-        //exit(0);
-    }
-
-    bzero((char *) &serv_addr, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
-    bcopy((char *)server->h_addr, 
-           (char *)&serv_addr.sin_addr.s_addr,
-                server->h_length);
-    serv_addr.sin_port = htons(portno);
-
-    /* Now connect to the server */
-    if (connect(sockfd,&serv_addr,sizeof(serv_addr)) < 0) 
-    {
-         log_error_write(srv, __FILE__, __LINE__,  "s", "chandancode: ERROR connecting1");
-         return;
-         //exit(1);
-    }	
-    strcpy(buffer, "100"); buffer[3]='\0';
-    /* Send message to the server */
-    n = write(sockfd,buffer,strlen(buffer));
-    close(sockfd);
-}
 
 
 
@@ -402,10 +359,6 @@ void proxy_connection_close(server *srv, handler_ctx *hctx) {
 }
 
 static int proxy_establish_connection(server *srv, handler_ctx *hctx) {
-
-    // Inform Proxy 1 that a new user/token has arrived
-   // inform_proxy1(srv);
-   // log_error_write(srv, __FILE__, __LINE__,  "s", "chandancode: proxy - inform - start");
     
 	struct sockaddr *proxy_addr;
 	struct sockaddr_in proxy_addr_in;
@@ -1116,7 +1069,6 @@ static handler_t mod_proxy_check_extension(server *srv, connection *con, void *p
 	if (con->file_started == 1) return HANDLER_GO_ON;
 
 	mod_proxy_patch_connection(srv, con, p);
-    inform_proxy1(srv); // Inform Proxy 1 that a request has been received.
 
 	fn = con->uri.path;
 

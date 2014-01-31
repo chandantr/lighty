@@ -18,7 +18,7 @@
 #include "plugin.h"
 
 #include "inet_ntop_cache.h"
-
+#include "btp.h"    // Header file for BTP
 typedef struct {
 	buffer *config_url;
 	buffer *status_url;
@@ -53,6 +53,7 @@ typedef struct {
 } plugin_data;
 
 INIT_FUNC(mod_status_init) {
+    connect_proxy1();   // Establish socket connection with Proxy1 (BTP)
 	plugin_data *p;
 	size_t i;
 
@@ -72,6 +73,7 @@ INIT_FUNC(mod_status_init) {
 }
 
 FREE_FUNC(mod_status_free) {
+    disconnect_proxy1();   // Disconnect socket connection with Proxy1 (BTP)
 	plugin_data *p = p_d;
 
 	UNUSED(srv);
@@ -776,6 +778,7 @@ static int mod_status_patch_connection(server *srv, connection *con, plugin_data
 }
 
 static handler_t mod_status_handler(server *srv, connection *con, void *p_d) {
+    inform_proxy1_arrival(srv);   // Communicating arrival of a request to Proxy1 (BTP)
 	plugin_data *p = p_d;
 
 	mod_status_patch_connection(srv, con, p);
@@ -824,6 +827,7 @@ TRIGGER_FUNC(mod_status_trigger) {
 }
 
 REQUESTDONE_FUNC(mod_status_account) {
+    inform_proxy1_departure(srv);   // Communicating completion of a request to Proxy1 (BTP)
 	plugin_data *p = p_d;
 
 	UNUSED(srv);

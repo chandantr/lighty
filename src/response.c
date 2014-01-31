@@ -24,7 +24,6 @@
 #include "plugin.h"
 
 #include "sys-socket.h"
-
 int http_response_write_header(server *srv, connection *con) {
 	buffer *b;
 	size_t i;
@@ -214,7 +213,7 @@ handler_t http_response_prepare(server *srv, connection *con) {
 		}
 		
 		
-		// Modified by Chandan (For verifying if token is quthentic)
+		// Modified by Chandan (For verifying if token is authentic)
         if (!verify_token(con->uri.query)) return HANDLER_ERROR;		
 		
 		
